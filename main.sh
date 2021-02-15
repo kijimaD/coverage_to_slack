@@ -13,19 +13,6 @@
 # - COMMIT_LOG: Log message of this commit
 #
 
-calcCoberturaRate() {
-  local script="
-import sys
-import xml.etree.ElementTree as ET
-root = ET.fromstring(sys.stdin.read())
-print('%.2f' % (float(root.attrib['line-rate']) * 100))
-"
-  local rate=$(python -c "$script")
-  [ "$rate" = "100.00" ] && rate=100
-  echo $rate
-}
-
-calcJacocoRate() {
   local script="
 import sys
 import xml.etree.ElementTree as ET
@@ -38,17 +25,6 @@ print('%.2f' % ( covered / (covered + missed) * 100))
   local rate=$(python -c "$script")
   [ "$rate" = "100.00" ] && rate=100
   echo $rate
-}
-
-calcRate() {
-  case "$coverage_type" in
-    "cobertura" )
-      calcCoberturaRate
-      ;;
-    "jacoco" )
-      calcJacocoRate
-      ;;
-  esac
 }
 
 coverage_type=${1:-cobertura}
