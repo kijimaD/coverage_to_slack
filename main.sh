@@ -13,17 +13,14 @@
 # - COMMIT_LOG: Log message of this commit
 #
 
+calcRate() {
   local script="
 import sys
-import xml.etree.ElementTree as ET
-root = ET.fromstring(sys.stdin.read())
-counter = [child for child in root if child.tag == 'counter' and child.attrib['type'] == 'LINE'][0]
-covered = float(counter.attrib['covered'])
-missed = float(counter.attrib['missed'])
-print('%.2f' % ( covered / (covered + missed) * 100))
+import json
+root = json.loads(sys.stdin.read())
+print('%.2f' % (float(root['metrics']['covered_percent'])))
 "
   local rate=$(python -c "$script")
-  [ "$rate" = "100.00" ] && rate=100
   echo $rate
 }
 
