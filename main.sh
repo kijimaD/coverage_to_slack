@@ -53,16 +53,18 @@ if [ -n "$coverage" ]; then
   rate_old=$(curl -s -L -H "Circle-Token: $CIRCLE_TOKEN" $coverage | calcRate)
 fi
 
+rate_diff=`echo "$rate_new - $rate_old" | bc | sed -e 's/\./0./g'` # .5 みたく、小数点の先頭に0をつけてくれないための処置。
+
 ## construct messages
 mode=$(python -c "print(1 if $rate_new == $rate_old else 0 if $rate_new < $rate_old else 2)")
-mes=$([ $mode -eq 0 ] && echo "DECREASED" || ([ $mode -eq 1 ] && echo "NOT CHANGED" || echo "INCREASED"))
+mes=$([ $mode -eq 0 ] && echo "減少！ :fire:" || ([ $mode -eq 1 ] && echo "NOT CHANGED :zzz:" || echo "増加！ :palm_tree:"))
 color=$([ $mode -eq 0 ] && echo "danger" || ([ $mode -eq 1 ] && echo "#a0a0a0" || echo "good"))
 cat > .slack_payload <<_EOT_
 {
   "attachments": [
     {
       "fallback": "Coverage ${mes} (${rate_new}%)",
-      "text": "*${mes}* (${rate_old}% -> ${rate_new}%)",
+      "text": "*${mes}* (${rate_old}% ➪ ${rate_new}%) ➟ *${rate_diff}%*",
       "pretext": "Coverage report: <https://circleci.com/gh/${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}/${CIRCLE_BUILD_NUM}|#${CIRCLE_BUILD_NUM}> <https://circleci.com/gh/${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}|${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}> (<https://circleci.com/gh/${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}/tree/${CIRCLE_BRANCH}|${CIRCLE_BRANCH}>)",
       "color": "${color}",
       "mrkdwn_in": ["pretext", "text", "fields"],
@@ -72,11 +74,11 @@ cat > .slack_payload <<_EOT_
           "short": false
         },
         {
-          "value": "Author: ${COMMIT_AUTHOR}",
+          "value": "${COMMIT_LOG}",
           "short": false
         },
         {
-          "value": "${COMMIT_LOG}",
+          "value": "Author: ${COMMIT_AUTHOR}",
           "short": false
         }
       ]
