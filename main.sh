@@ -54,6 +54,9 @@ if [ -n "$coverage" ]; then
 fi
 
 rate_diff=`echo "$rate_new - $rate_old" | bc | sed -e 's/\./0./g'` # .5 みたく、小数点の先頭に0をつけてくれないための処置。
+issue_number=`echo $CIRCLE_BRANCH | sed -e "s/[_-].*//g"`
+github_issue_url="github.com/${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}/issues/${issue_number}"
+github_pr_url="github.com/${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}/pull/${CIRCLE_PR_NUMBER}"
 
 ## construct messages
 mode=$(python -c "print(1 if $rate_new == $rate_old else 0 if $rate_new < $rate_old else 2)")
@@ -70,15 +73,15 @@ cat > .slack_payload <<_EOT_
       "mrkdwn_in": ["pretext", "text", "fields"],
       "fields": [
         {
-          "value": "Commit: <https://github.com/${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}/commit/${CIRCLE_SHA1}|${CIRCLE_SHA1}>",
+          "value": "Commit: <https://github.com/${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}/commit/${CIRCLE_SHA1}|${COMMIT_LOG}> by ${COMMIT_AUTHOR}",
           "short": false
         },
         {
-          "value": "${COMMIT_LOG}",
+          "value": "Issue: ${github_issue_url} PR: ${github_pr_url}",
           "short": false
         },
         {
-          "value": "Author: ${COMMIT_AUTHOR}",
+          "value": "PR: ${github_pr_url} alt: ${CIRCLE_PULL_REQUEST}",
           "short": false
         }
       ]
