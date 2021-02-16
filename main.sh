@@ -1,4 +1,5 @@
 ###
+# https://qiita.com/u-minor/items/c18f0f03a9255f9e5231 のスクリプト https://gist.githubusercontent.com/u-minor/20c7876b9bc4b875d9c73b59f2a4365f/raw/circleci2-coverage-slack を参考に改変したものです。
 # Post coverage rate to Slack
 #
 # Usage: bash circleci-coverage-slack.sh [cobertura|jacoco]
